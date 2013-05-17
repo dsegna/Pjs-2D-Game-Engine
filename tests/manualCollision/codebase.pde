@@ -422,14 +422,27 @@ abstract class Actor extends Positionable {
   }
 
   // handle key presses
-  void keyPressed(char key, int keyCode) {
-    for(int i: keyCodes) {
-      setIfTrue(keyCode, i); }}
-
+  void keyPressed(char key, int keyCode) {  
+    //this form of looping seems to not be supprted in firefox
+    /*for(int i: keyCodes) {
+      setIfTrue(keyCode, i); }
+    */
+    for(int i=0;i<keyCodes.length;i++){
+      setIfTrue(keyCode,keyCodes[i]);
+    }
+  }
+    
   // handle key releases
   void keyReleased(char key, int keyCode) {
-    for(int i: keyCodes) {
-      unsetIfTrue(keyCode, i); }}
+    //this form of looping seems to not be supported in firefox
+    /*for(int i: keyCodes) {
+      unsetIfTrue(keyCode, i); 
+    }*/
+    for(int i=0;i<keyCodes.length;i++){
+      unsetIfTrue(keyCode,keyCodes[i]);
+    }
+
+  }
 
   /**
    * Does the indicated x/y coordinate fall inside this drawable thing's region?
