@@ -432,14 +432,14 @@ abstract class Actor extends Positionable {
   // handle key presses
   void keyPressed(char key, int keyCode) {  
     for(int i=0;i<keyCodes.length;i++){
-      setIfTrue(keyCode,keyCodes[i]);
+      setIfTrue(int(key),keyCodes[i]);
     }
   }
     
   // handle key releases
   void keyReleased(char key, int keyCode) {
     for(int i=0;i<keyCodes.length;i++){
-      unsetIfTrue(keyCode,keyCodes[i]);
+      unsetIfTrue(int(key),keyCodes[i]);
     }
   }
 
@@ -2409,8 +2409,8 @@ class Position {
 
     float dx = xmid2 - xmid1;
     float dy = ymid2 - ymid1;
-    float dw = (w + ow)/2;
-    float dh = (h + oh)/2;
+    float dw = (w*sx + ow)/2;
+    float dh = (h*sy + oh)/2;
 
     // no overlap if the midpoint distance is greater
     // than the dimension half-distances put together.
@@ -4417,6 +4417,14 @@ class ViewBox {
     // set values based on visual constraints
     x = min( max(0,idealx), level.width - w );
     y = min( max(0,idealy), level.height - h );
+  }
+  void translate(int _x, int _y, Level level){
+    if(x+_x < 0) x=0; 
+    else if (x+_x > level.width) x=level.width;
+    else x+=_x;
+    if(y+_y < 0) y=0;
+    else if(y+_y > level.height) y=level.height;
+    else y+=_y;
   }
 }
 

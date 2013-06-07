@@ -432,7 +432,6 @@ abstract class Actor extends Positionable {
   // handle key presses
   void keyPressed(char key, int keyCode) { 
     for(int i=0;i<keyCodes.length;i++){
-      //setIfTrue(keyCode,keyCodes[i]);
       setIfTrue(int(key),keyCodes[i]);
     }
   }
@@ -440,7 +439,6 @@ abstract class Actor extends Positionable {
   // handle key releases
   void keyReleased(char key, int keyCode) {
     for(int i=0;i<keyCodes.length;i++){
-      //unsetIfTrue(keyCode,keyCodes[i]);
       unsetIfTrue(int(key),keyCodes[i]);
     }
   }
@@ -2411,8 +2409,8 @@ class Position {
 
     float dx = xmid2 - xmid1;
     float dy = ymid2 - ymid1;
-    float dw = (w + ow)/2;
-    float dh = (h + oh)/2;
+    float dw = (w*sx + ow)/2;
+    float dh = (h*sy + oh)/2;
 
     // no overlap if the midpoint distance is greater
     // than the dimension half-distances put together.
