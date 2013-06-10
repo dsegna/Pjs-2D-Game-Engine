@@ -1865,7 +1865,13 @@ abstract class LevelLayer {
     if(sy!=1) { height /= sy; }
     nonstandard = (xScale!=1 || yScale!=1 || xTranslate!=0 || yTranslate!=0);
   }
-  
+  /**
+   * Uniformally scale the level layer
+   */
+  void setScale(float s){
+    xScale = s;
+    yScale = s;
+  }
   /**
    * Get the level this layer exists in
    */
