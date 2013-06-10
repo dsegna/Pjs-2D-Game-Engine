@@ -181,9 +181,8 @@ abstract class Actor extends Positionable {
    */
   float[] getBoundingBox() {
     if(active==null) return null;
-    
-    float[] bounds = active.sprite.getBoundingBox();
-    
+    float[] bounds = active.sprite.getBoundingBox(sx,sy);
+
     // transform the bounds, based on local translation/scale/rotation
     if(r!=0) {
       float x1=bounds[0], y1=bounds[1],
@@ -207,6 +206,7 @@ abstract class Actor extends Positionable {
     bounds[6] += x+ox; bounds[7] += y+oy;  // bottom left
 
     // done
+        //console.log(bounds);
     return bounds;
   }
 
@@ -366,9 +366,11 @@ abstract class Actor extends Positionable {
    */
   void drawObject() {
     if(active!=null) {
-      active.draw(disabledCounter>0);
-      /*
+      active.draw(disabledCounter>0);    
       if(debug) {
+        pushMatrix();
+        resetMatrix();
+        translate(x,y);
         noFill();
         stroke(255,0,0);
         float[] bounds = getBoundingBox();
@@ -378,8 +380,15 @@ abstract class Actor extends Positionable {
         vertex(bounds[4]-x,bounds[5]-y);
         vertex(bounds[6]-x,bounds[7]-y);
         endShape(CLOSE);
+        float[] bounds = previous.getBoundingBox();
+        beginShape();
+        vertex(bounds[0]-x,bounds[1]-y);
+        vertex(bounds[2]-x,bounds[3]-y);
+        vertex(bounds[4]-x,bounds[5]-y);
+        vertex(bounds[6]-x,bounds[7]-y);
+        endShape(CLOSE);
+        popMatrix();
       }
-      */
     }
   }
 
@@ -430,7 +439,7 @@ abstract class Actor extends Positionable {
   }
 
   // handle key presses
-  void keyPressed(char key, int keyCode) { 
+  void keyPressed(char key, int keyCode) {
     for(int i=0;i<keyCodes.length;i++){
       setIfTrue(int(key),keyCodes[i]);
     }
@@ -448,7 +457,7 @@ abstract class Actor extends Positionable {
    */
   boolean over(float _x, float _y) {
     if (active == null) return false;
-    return active.over(_x - getX(), _y - getY());
+    return active.over(_x - getX(), _y - getY(),sx,sy);
   }
 
   void mouseMoved(int mx, int my) {}
@@ -927,7 +936,7 @@ static class CollisionDetection {
       if(debug) sketch.println(sketch.frameCount +">   this boundary is not involved in collisions for this frame (out of range).");
       return null;
     }
-
+    //debug=true;
     // if the force goes against the border's permissible direction, but
     // both previous and current frame actor boxes are above the boundary,
     // then we don't have to bother with intersection detection.
@@ -1865,7 +1874,13 @@ abstract class LevelLayer {
     if(sy!=1) { height /= sy; }
     nonstandard = (xScale!=1 || yScale!=1 || xTranslate!=0 || yTranslate!=0);
   }
-  
+  /**
+   * Uniformally scale the level layer
+   */
+  void setScale(float s){
+    xScale = s;
+    yScale = s;
+  }
   /**
    * Get the level this layer exists in
    */
@@ -2386,18 +2401,23 @@ class Position {
    * Get this positionable's bounding box
    */
   float[] getBoundingBox() {
-    return new float[]{x+ox-width/2, y-oy-height/2,  // top-left
-                       x+ox+width/2, y-oy-height/2,  // top-right
-                       x+ox+width/2, y-oy+height/2,  // bottom-right
-                       x+ox-width/2, y-oy+height/2}; // bottom-left
+    return new float[]{x+ox-sx*width/2, y-oy-sy*height/2,  // top-left
+                       x+ox+sx*width/2, y-oy-sy*height/2,  // top-right
+                       x+ox+sx*width/2, y-oy+sy*height/2,  // bottom-right
+                       x+ox-sx*width/2, y-oy+sy*height/2}; // bottom-left
   }
-
+  float[] getBoundingBox(float ssx, float ssy) {
+    return new float[]{x+ox-ssx*width/2, y-oy-ssy*height/2,  // top-left
+                       x+ox+ssx*width/2, y-oy-ssy*height/2,  // top-right
+                       x+ox+ssx*width/2, y-oy+ssy*height/2,  // bottom-right
+                       x+ox-ssx*width/2, y-oy+ssy*height/2}; // bottom-left
+  }
   /**
    * Primitive sprite overlap test: bounding box
    * overlap using midpoint distance.
    */
   float[] overlap(Position other) {
-    float w=width, h=height, ow=other.width, oh=other.height;
+    float w=width*sx, h=height*sy, ow=other.width*other.sx, oh=other.height*other.sy;
     float[] bounds = getBoundingBox();
     float[] obounds = other.getBoundingBox();
     if(bounds==null || obounds==null) return null;
@@ -2409,8 +2429,8 @@ class Position {
 
     float dx = xmid2 - xmid1;
     float dy = ymid2 - ymid1;
-    float dw = (w*sx + ow)/2;
-    float dh = (h*sy + oh)/2;
+    float dw = (w + ow)/2;
+    float dh = (h + oh)/2;
 
     // no overlap if the midpoint distance is greater
     // than the dimension half-distances put together.
@@ -3529,10 +3549,12 @@ class Sprite extends Positionable {
   }
 
   // check if coordinate overlaps the sprite.
-  boolean over(float _x, float _y) {
-    _x -= ox - halfwidth;
-    _y -= oy - halfheight;
-    return x <= _x && _x <= x+width && y <= _y && _y <= y+height;
+  boolean over(float _x, float _y, float scalex, float scaley) {
+    int tmpWidth=width*scalex;
+    int tmpHeight=height*scaley;
+    _x -= ox - tmpWidth/2;
+    _y -= oy - tmpHeight/2;
+    return x <= _x && _x <= x+tmpWidth && y <= _y && _y <= y+tmpHeight;
   }
   
 // -- pathing informmation
@@ -4201,8 +4223,8 @@ class State {
   }
   
   // check if coordinate is in sprite
-  boolean over(float _x, float _y) {
-    return sprite.over(_x,_y);
+  boolean over(float _x, float _y,float sx,float sy) {
+    return sprite.over(_x,_y,sx,sy);
   }
   
   // set sprite's animation
