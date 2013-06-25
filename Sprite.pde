@@ -299,10 +299,12 @@ class Sprite extends Positionable {
   }
 
   // check if coordinate overlaps the sprite.
-  boolean over(float _x, float _y) {
-    _x -= ox - halfwidth;
-    _y -= oy - halfheight;
-    return x <= _x && _x <= x+width && y <= _y && _y <= y+height;
+  boolean over(float _x, float _y, float scalex, float scaley) {
+    int tmpWidth=width*scalex;
+    int tmpHeight=height*scaley;
+    _x -= ox - tmpWidth/2;
+    _y -= oy - tmpHeight/2;
+    return x <= _x && _x <= x+tmpWidth && y <= _y && _y <= y+tmpHeight; 
   }
   
 // -- pathing informmation

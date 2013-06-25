@@ -182,7 +182,7 @@ abstract class Actor extends Positionable {
   float[] getBoundingBox() {
     if(active==null) return null;
     
-    float[] bounds = active.sprite.getBoundingBox();
+    float[] bounds = active.sprite.getBoundingBox(sx,sy); 
     
     // transform the bounds, based on local translation/scale/rotation
     if(r!=0) {
@@ -369,6 +369,9 @@ abstract class Actor extends Positionable {
       active.draw(disabledCounter>0);
       /*
       if(debug) {
+        pushMatrix();
+        resetMatrix();
+        translate(x,y);         
         noFill();
         stroke(255,0,0);
         float[] bounds = getBoundingBox();
@@ -378,6 +381,7 @@ abstract class Actor extends Positionable {
         vertex(bounds[4]-x,bounds[5]-y);
         vertex(bounds[6]-x,bounds[7]-y);
         endShape(CLOSE);
+        popMatrix();
       }
       */
     }
@@ -430,7 +434,7 @@ abstract class Actor extends Positionable {
   }
 
   // handle key presses
-  void keyPressed(char key, int keyCode) { 
+  void keyPressed(char key, int keyCode) {
     for(int i=0;i<keyCodes.length;i++){
       setIfTrue(int(key),keyCodes[i]);
     }
@@ -447,7 +451,7 @@ abstract class Actor extends Positionable {
    */
   boolean over(float _x, float _y) {
     if (active == null) return false;
-    return active.over(_x - getX(), _y - getY());
+    return active.over(_x - getX(), _y - getY(),sx,sy);
   }
 
   void mouseMoved(int mx, int my) {}

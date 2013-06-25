@@ -182,7 +182,7 @@ abstract class Actor extends Positionable {
   float[] getBoundingBox() {
     if(active==null) return null;
     
-    float[] bounds = active.sprite.getBoundingBox();
+    float[] bounds = active.sprite.getBoundingBox(sx,sy); 
     
     // transform the bounds, based on local translation/scale/rotation
     if(r!=0) {
@@ -369,6 +369,9 @@ abstract class Actor extends Positionable {
       active.draw(disabledCounter>0);
       /*
       if(debug) {
+        pushMatrix();
+        resetMatrix();
+        translate(x,y);         
         noFill();
         stroke(255,0,0);
         float[] bounds = getBoundingBox();
@@ -378,6 +381,7 @@ abstract class Actor extends Positionable {
         vertex(bounds[4]-x,bounds[5]-y);
         vertex(bounds[6]-x,bounds[7]-y);
         endShape(CLOSE);
+        popMatrix();
       }
       */
     }
@@ -430,16 +434,15 @@ abstract class Actor extends Positionable {
   }
 
   // handle key presses
-  void keyPressed(char key, int keyCode) {  
+  void keyPressed(char key, int keyCode) {
     for(int i=0;i<keyCodes.length;i++){
-      setIfTrue(keyCode,keyCodes[i]);
+      setIfTrue(int(key),keyCodes[i]);
     }
   }
-    
   // handle key releases
   void keyReleased(char key, int keyCode) {
     for(int i=0;i<keyCodes.length;i++){
-      unsetIfTrue(keyCode,keyCodes[i]);
+      unsetIfTrue(int(key),keyCodes[i]);
     }
   }
 
@@ -448,7 +451,7 @@ abstract class Actor extends Positionable {
    */
   boolean over(float _x, float _y) {
     if (active == null) return false;
-    return active.over(_x - getX(), _y - getY());
+    return active.over(_x - getX(), _y - getY(),sx,sy);
   }
 
   void mouseMoved(int mx, int my) {}
@@ -1865,7 +1868,13 @@ abstract class LevelLayer {
     if(sy!=1) { height /= sy; }
     nonstandard = (xScale!=1 || yScale!=1 || xTranslate!=0 || yTranslate!=0);
   }
-  
+  /**
+   * Uniformally scale the level layer
+   */
+  void setScale(float s){
+    xScale = s;
+    yScale = s;
+  }   
   /**
    * Get the level this layer exists in
    */
@@ -2386,10 +2395,16 @@ class Position {
    * Get this positionable's bounding box
    */
   float[] getBoundingBox() {
-    return new float[]{x+ox-width/2, y-oy-height/2,  // top-left
-                       x+ox+width/2, y-oy-height/2,  // top-right
-                       x+ox+width/2, y-oy+height/2,  // bottom-right
-                       x+ox-width/2, y-oy+height/2}; // bottom-left
+    return new float[]{x+ox-sx*width/2, y-oy-sy*height/2,  // top-left
+                       x+ox+sx*width/2, y-oy-sy*height/2,  // top-right
+                       x+ox+sx*width/2, y-oy+sy*height/2,  // bottom-right
+                       x+ox-sx*width/2, y-oy+sy*height/2}; // bottom-left
+  }
+  float[] getBoundingBox(float ssx, float ssy) {
+    return new float[]{x+ox-ssx*width/2, y-oy-ssy*height/2,  // top-left
+                       x+ox+ssx*width/2, y-oy-ssy*height/2,  // top-right
+                       x+ox+ssx*width/2, y-oy+ssy*height/2,  // bottom-right
+                       x+ox-ssx*width/2, y-oy+ssy*height/2}; // bottom-left
   }
 
   /**
@@ -2397,7 +2412,7 @@ class Position {
    * overlap using midpoint distance.
    */
   float[] overlap(Position other) {
-    float w=width, h=height, ow=other.width, oh=other.height;
+    float w=width*sx, h=height*sy, ow=other.width*other.sx, oh=other.height*other.sy;
     float[] bounds = getBoundingBox();
     float[] obounds = other.getBoundingBox();
     if(bounds==null || obounds==null) return null;
@@ -3529,10 +3544,12 @@ class Sprite extends Positionable {
   }
 
   // check if coordinate overlaps the sprite.
-  boolean over(float _x, float _y) {
-    _x -= ox - halfwidth;
-    _y -= oy - halfheight;
-    return x <= _x && _x <= x+width && y <= _y && _y <= y+height;
+  boolean over(float _x, float _y, float scalex, float scaley) {
+    int tmpWidth=width*scalex;
+    int tmpHeight=height*scaley;
+    _x -= ox - tmpWidth/2;
+    _y -= oy - tmpHeight/2;
+    return x <= _x && _x <= x+tmpWidth && y <= _y && _y <= y+tmpHeight; 
   }
   
 // -- pathing informmation
@@ -4202,7 +4219,7 @@ class State {
   
   // check if coordinate is in sprite
   boolean over(float _x, float _y) {
-    return sprite.over(_x,_y);
+    return sprite.over(_x,_y,sx,sy);
   }
   
   // set sprite's animation
@@ -4418,6 +4435,20 @@ class ViewBox {
     x = min( max(0,idealx), level.width - w );
     y = min( max(0,idealy), level.height - h );
   }
+  void translate(int _x, int _y, Level level){
+    if(x+_x < 0) 
+      x=0; 
+    else if (x+_x > level.width) 
+      x=level.width;
+    else 
+      x+=_x;
+    if(y+_y < 0) 
+      y=0;
+    else if(y+_y > level.height) 
+      y=level.height;
+    else 
+      y+=_y;
+  } 
 }
 
 

@@ -89,10 +89,16 @@ class Position {
    * Get this positionable's bounding box
    */
   float[] getBoundingBox() {
-    return new float[]{x+ox-width/2, y-oy-height/2,  // top-left
-                       x+ox+width/2, y-oy-height/2,  // top-right
-                       x+ox+width/2, y-oy+height/2,  // bottom-right
-                       x+ox-width/2, y-oy+height/2}; // bottom-left
+    return new float[]{x+ox-sx*width/2, y-oy-sy*height/2,  // top-left
+                       x+ox+sx*width/2, y-oy-sy*height/2,  // top-right
+                       x+ox+sx*width/2, y-oy+sy*height/2,  // bottom-right
+                       x+ox-sx*width/2, y-oy+sy*height/2}; // bottom-left
+  }
+  float[] getBoundingBox(float ssx, float ssy) {
+    return new float[]{x+ox-ssx*width/2, y-oy-ssy*height/2,  // top-left
+                       x+ox+ssx*width/2, y-oy-ssy*height/2,  // top-right
+                       x+ox+ssx*width/2, y-oy+ssy*height/2,  // bottom-right
+                       x+ox-ssx*width/2, y-oy+ssy*height/2}; // bottom-left
   }
 
   /**
@@ -100,7 +106,7 @@ class Position {
    * overlap using midpoint distance.
    */
   float[] overlap(Position other) {
-    float w=width, h=height, ow=other.width, oh=other.height;
+    float w=width*sx, h=height*sy, ow=other.width*other.sx, oh=other.height*other.sy;
     float[] bounds = getBoundingBox();
     float[] obounds = other.getBoundingBox();
     if(bounds==null || obounds==null) return null;
@@ -112,8 +118,8 @@ class Position {
 
     float dx = xmid2 - xmid1;
     float dy = ymid2 - ymid1;
-    float dw = (w*sx + ow)/2;
-    float dh = (h*sy + oh)/2;
+    float dw = (w + ow)/2;
+    float dh = (h + oh)/2;
 
     // no overlap if the midpoint distance is greater
     // than the dimension half-distances put together.

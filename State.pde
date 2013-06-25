@@ -141,7 +141,7 @@ class State {
   
   // check if coordinate is in sprite
   boolean over(float _x, float _y) {
-    return sprite.over(_x,_y);
+    return sprite.over(_x,_y,sx,sy);
   }
   
   // set sprite's animation
