@@ -4218,7 +4218,7 @@ class State {
   }
   
   // check if coordinate is in sprite
-  boolean over(float _x, float _y) {
+  boolean over(float _x, float _y, float sx, float sy) {
     return sprite.over(_x,_y,sx,sy);
   }
   
