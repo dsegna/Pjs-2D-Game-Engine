@@ -451,9 +451,12 @@ abstract class Actor extends Positionable {
    */
   boolean over(float _x, float _y) {
     if (active == null) return false;
-    return active.over(_x - getX(), _y - getY(),sx,sy);
+    float x_=_x - getX();
+    float y_=_y - getY();
+    return active.over( x_*cos(r) - y_*sin(r),
+                        x_*sin(r) + y_*cos(r),
+                        sx,sy);
   }
-
   void mouseMoved(int mx, int my) {}
   void mousePressed(int mx, int my, int button) {}
   void mouseDragged(int mx, int my, int button) {}
