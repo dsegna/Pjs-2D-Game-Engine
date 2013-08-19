@@ -264,7 +264,12 @@ abstract class Positionable extends Position implements Drawable {
     r = _r % (2*PI);
     jsupdate();
   }
-
+  /**
+   * set the transparency to the specified value.
+   */
+  void setTransparency(int _alpha){
+    alpha = _alpha;
+  }
   /**
    * flip this object horizontally.
    */
